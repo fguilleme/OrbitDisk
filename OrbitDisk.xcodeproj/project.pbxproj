@@ -1,0 +1,197 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F010 /* ContentView.swift */; };
+		B002 /* DiskScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F011 /* DiskScanner.swift */; };
+		B003 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = F012 /* Models.swift */; };
+		B004 /* OrbitDiskApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F013 /* OrbitDiskApp.swift */; };
+		B005 /* ScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014 /* ScanViewModel.swift */; };
+		B006 /* SunburstView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015 /* SunburstView.swift */; };
+		B007 /* OrbitDiskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* OrbitDiskTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		C001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F001 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = T001;
+			remoteInfo = OrbitDisk;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		F010 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F011 /* DiskScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiskScanner.swift; sourceTree = "<group>"; };
+		F012 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		F013 /* OrbitDiskApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbitDiskApp.swift; sourceTree = "<group>"; };
+		F014 /* ScanViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanViewModel.swift; sourceTree = "<group>"; };
+		F015 /* SunburstView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SunburstView.swift; sourceTree = "<group>"; };
+		F016 /* OrbitDiskTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OrbitDiskTests.swift; sourceTree = "<group>"; };
+		F017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F018 /* OrbitDisk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OrbitDisk.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F019 /* OrbitDiskTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OrbitDiskTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		P002 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		P005 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F002 = {
+			isa = PBXGroup;
+			children = (F004 /* OrbitDisk */, F005 /* OrbitDiskTests */, F006 /* Packaging */, F003 /* Products */);
+			sourceTree = "<group>";
+		};
+		F003 /* Products */ = {isa = PBXGroup; children = (F018 /* OrbitDisk.app */, F019 /* OrbitDiskTests.xctest */); name = Products; sourceTree = "<group>"; };
+		F004 /* OrbitDisk */ = {
+			isa = PBXGroup;
+			children = (F010, F011, F012, F013, F014, F015);
+			name = OrbitDisk;
+			path = Sources/OrbitDisk;
+			sourceTree = "<group>";
+		};
+		F005 /* OrbitDiskTests */ = {
+			isa = PBXGroup;
+			children = (F016);
+			name = OrbitDiskTests;
+			path = Tests/OrbitDiskTests;
+			sourceTree = "<group>";
+		};
+		F006 /* Packaging */ = {isa = PBXGroup; children = (F017 /* Info.plist */); path = Packaging; sourceTree = "<group>"; };
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		T001 /* OrbitDisk */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CL02;
+			buildPhases = (P001 /* Sources */, P002 /* Frameworks */, P003 /* Resources */);
+			buildRules = ();
+			dependencies = ();
+			name = OrbitDisk;
+			productName = OrbitDisk;
+			productReference = F018 /* OrbitDisk.app */;
+			productType = "com.apple.product-type.application";
+		};
+		T002 /* OrbitDiskTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CL03;
+			buildPhases = (P004 /* Sources */, P005 /* Frameworks */, P006 /* Resources */);
+			buildRules = ();
+			dependencies = (D001 /* PBXTargetDependency */);
+			name = OrbitDiskTests;
+			productName = OrbitDiskTests;
+			productReference = F019 /* OrbitDiskTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F001 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2710;
+				LastUpgradeCheck = 2710;
+				TargetAttributes = { T001 = {CreatedOnToolsVersion = 27.1; }; T002 = {CreatedOnToolsVersion = 27.1; TestTargetID = T001; }; };
+			};
+			buildConfigurationList = CL01;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = fr;
+			hasScannedForEncodings = 0;
+			knownRegions = (fr, Base);
+			mainGroup = F002;
+			productRefGroup = F003 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (T001 /* OrbitDisk */, T002 /* OrbitDiskTests */);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		P003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		P006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		P001 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B001, B002, B003, B004, B005, B006); runOnlyForDeploymentPostprocessing = 0; };
+		P004 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B007); runOnlyForDeploymentPostprocessing = 0; };
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		D001 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = T001 /* OrbitDisk */; targetProxy = C001 /* PBXContainerItemProxy */; };
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		C101 /* Debug */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; ENABLE_TESTABILITY = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; ONLY_ACTIVE_ARCH = YES; SDKROOT = macosx; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; SWIFT_VERSION = 6.0; }; name = Debug; };
+		C102 /* Release */ = {isa = XCBuildConfiguration; buildSettings = {CLANG_ENABLE_MODULES = YES; MACOSX_DEPLOYMENT_TARGET = 14.0; SDKROOT = macosx; SWIFT_COMPILATION_MODE = wholemodule; SWIFT_OPTIMIZATION_LEVEL = "-O"; SWIFT_VERSION = 6.0; }; name = Release; };
+		C201 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Packaging/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = app.orbitdisk.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+			};
+			name = Debug;
+		};
+		C202 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Packaging/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = app.orbitdisk.mac;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		C301 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.orbitdisk.mac.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OrbitDisk.app/Contents/MacOS/OrbitDisk";
+			};
+			name = Debug;
+		};
+		C302 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = app.orbitdisk.mac.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OrbitDisk.app/Contents/MacOS/OrbitDisk";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		CL01 = {isa = XCConfigurationList; buildConfigurations = (C101, C102); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		CL02 = {isa = XCConfigurationList; buildConfigurations = (C201, C202); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+		CL03 = {isa = XCConfigurationList; buildConfigurations = (C301, C302); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
+/* End XCConfigurationList section */
+	};
+	rootObject = F001 /* Project object */;
+}
