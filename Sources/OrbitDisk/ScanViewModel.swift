@@ -4,6 +4,13 @@ import SwiftUI
 
 @MainActor
 final class ScanViewModel: ObservableObject {
+    private struct TrashOutcome: Sendable {
+        var movedPaths: [String] = []
+        var failures: [String] = []
+
+        var moved: Int { movedPaths.count }
+    }
+
     enum State: Equatable {
         case idle
         case scanning
@@ -19,10 +26,15 @@ final class ScanViewModel: ObservableObject {
     @Published private(set) var volumes: [VolumeInfo] = []
     @Published private(set) var scanTargetURL: URL?
     @Published private(set) var collected: [DiskNode] = []
+    @Published private(set) var collectorTrashSecondsRemaining: Int?
+    @Published private(set) var isTrashingCollected = false
+    @Published private(set) var collectorStatus: String?
+    @Published private(set) var collectorStatusIsError = false
     @Published var notice: String?
 
     private let scanner = DiskScanner()
     private var scanTask: Task<Void, Never>?
+    private var collectorTrashCountdownTask: Task<Void, Never>?
     private var forwardNavigation: [DiskNode] = []
 
     var focus: DiskNode? { navigation.last ?? root }
@@ -122,6 +134,8 @@ final class ScanViewModel: ObservableObject {
 
     func startScan(_ url: URL) {
         scanTask?.cancel()
+        cancelCollectorTrash()
+        collectorStatus = nil
         root = nil
         navigation = []
         selected = nil
@@ -176,7 +190,8 @@ final class ScanViewModel: ObservableObject {
     func navigate(to node: DiskNode) {
         guard node.isDirectory else { selected = node; return }
         guard node.id != focus?.id else { return }
-        navigation.append(node)
+        guard let fullPath = root?.path(to: node.id) else { return }
+        navigation = Array(fullPath.dropFirst())
         forwardNavigation.removeAll()
         selected = nil
     }
@@ -201,6 +216,8 @@ final class ScanViewModel: ObservableObject {
 
     func returnToVolumes() {
         scanTask?.cancel()
+        cancelCollectorTrash()
+        collectorStatus = nil
         root = nil
         navigation = []
         forwardNavigation = []
@@ -213,6 +230,8 @@ final class ScanViewModel: ObservableObject {
 
     func toggleCollected(_ node: DiskNode) {
         guard node.url != nil, node.id != root?.id else { return }
+        cancelCollectorTrash()
+        collectorStatus = nil
         if let index = collected.firstIndex(where: { $0.id == node.id }) {
             collected.remove(at: index)
         } else {
@@ -220,8 +239,111 @@ final class ScanViewModel: ObservableObject {
         }
     }
 
-    func clearCollector() {
-        collected.removeAll()
+    func beginTrashCollector() {
+        guard !collected.isEmpty else { return }
+        cancelCollectorTrash()
+        collectorStatus = nil
+        let delay = 5
+        collectorTrashSecondsRemaining = delay
+        collectorTrashCountdownTask = Task { [weak self] in
+            for remaining in stride(from: delay - 1, through: 0, by: -1) {
+                do {
+                    try await Task.sleep(for: .seconds(1))
+                } catch {
+                    return
+                }
+                guard let self, !Task.isCancelled else { return }
+                if remaining == 0 {
+                    collectorTrashSecondsRemaining = nil
+                    collectorTrashCountdownTask = nil
+                    await trashCollectedItems()
+                } else {
+                    collectorTrashSecondsRemaining = remaining
+                }
+            }
+        }
+    }
+
+    func cancelCollectorTrash() {
+        collectorTrashCountdownTask?.cancel()
+        collectorTrashCountdownTask = nil
+        collectorTrashSecondsRemaining = nil
+    }
+
+    private func trashCollectedItems() async {
+        let targets = topLevelCollectedURLs()
+        guard !targets.isEmpty else { return }
+        isTrashingCollected = true
+
+        let outcome = await Task.detached(priority: .userInitiated) {
+            var outcome = TrashOutcome()
+            for url in targets {
+                do {
+                    var resultingURL: NSURL?
+                    try FileManager.default.trashItem(at: url, resultingItemURL: &resultingURL)
+                    outcome.movedPaths.append(url.path)
+                } catch {
+                    outcome.failures.append("\(url.lastPathComponent): \(error.localizedDescription)")
+                }
+            }
+            return outcome
+        }.value
+
+        isTrashingCollected = false
+        if outcome.moved > 0 {
+            let noun = outcome.moved == 1 ? "item" : "items"
+            if outcome.failures.isEmpty {
+                collectorStatus = "\(outcome.moved) \(noun) moved to the Trash"
+                collectorStatusIsError = false
+            } else {
+                collectorStatus = "\(outcome.moved) moved; \(outcome.failures.count) could not be moved"
+                collectorStatusIsError = true
+            }
+            updateTreeAfterTrash(movedPaths: Set(outcome.movedPaths))
+        } else {
+            collectorStatus = outcome.failures.isEmpty
+                ? "Nothing was moved to the Trash"
+                : "Could not move \(outcome.failures.count) item\(outcome.failures.count == 1 ? "" : "s") to the Trash"
+            collectorStatusIsError = true
+        }
+    }
+
+    private func updateTreeAfterTrash(movedPaths: Set<String>) {
+        let previousFocusID = focus?.id
+        if let currentRoot = root,
+           let updatedRoot = currentRoot.removingNodes(atOrBelow: movedPaths) {
+            root = updatedRoot
+            if let previousFocusID,
+               let updatedPath = updatedRoot.path(to: previousFocusID) {
+                navigation = Array(updatedPath.dropFirst())
+            } else {
+                navigation = []
+            }
+            forwardNavigation = forwardNavigation.compactMap {
+                updatedRoot.node(atPath: $0.id)
+            }
+        }
+        selected = nil
+        collected.removeAll { node in
+            movedPaths.contains { movedPath in
+                node.id == movedPath || node.id.hasPrefix(movedPath + "/")
+            }
+        }
+    }
+
+    private func topLevelCollectedURLs() -> [URL] {
+        let urls = collected.compactMap(\.url).map(\.standardizedFileURL).sorted {
+            $0.pathComponents.count < $1.pathComponents.count
+        }
+        var result: [URL] = []
+        for url in urls {
+            let path = url.path
+            let alreadyCovered = result.contains { parent in
+                path == parent.path || path.hasPrefix(parent.path + "/")
+            }
+            if !alreadyCovered { result.append(url) }
+        }
+        return result
     }
 
     func reveal(_ node: DiskNode) {

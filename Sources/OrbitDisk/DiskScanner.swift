@@ -180,7 +180,7 @@ actor DiskScanner {
             if omittedItems > 0 {
                 retained.append(DiskNode(
                     id: path + "/.orbit-other",
-                    name: "Autres éléments",
+                    name: "smaller objects…",
                     url: nil,
                     size: omittedBytes,
                     itemCount: omittedItems,
@@ -189,6 +189,11 @@ actor DiskScanner {
                     isUnreadable: false
                 ))
             }
+            retained = DiskNode.consolidatingSmallChildren(
+                retained,
+                parentID: path,
+                parentSize: bytes
+            )
 
             return DiskNode(
                 id: path,
@@ -681,7 +686,7 @@ actor DiskScanner {
             if aggregateSize > 0 {
                 children.append(DiskNode(
                     id: path + "/.orbit-other",
-                    name: "Autres éléments",
+                    name: "smaller objects…",
                     url: nil,
                     size: aggregateSize,
                     itemCount: max(1, childPaths.count - retainedPaths.count),
@@ -690,6 +695,11 @@ actor DiskScanner {
                     isUnreadable: false
                 ))
             }
+            children = DiskNode.consolidatingSmallChildren(
+                children,
+                parentID: path,
+                parentSize: size
+            )
             return DiskNode(
                 id: path,
                 name: name,

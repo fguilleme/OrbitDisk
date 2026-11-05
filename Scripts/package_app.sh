@@ -11,6 +11,7 @@ swift build -c "$configuration"
 mkdir -p "$app_dir/Contents/MacOS" "$app_dir/Contents/Resources"
 cp "$project_root/.build/$configuration/OrbitDisk" "$app_dir/Contents/MacOS/OrbitDisk"
 cp "$project_root/Packaging/Info.plist" "$app_dir/Contents/Info.plist"
+cp "$project_root/Packaging/OrbitDisk.icns" "$app_dir/Contents/Resources/OrbitDisk.icns"
 chmod +x "$app_dir/Contents/MacOS/OrbitDisk"
 
 echo "$app_dir"

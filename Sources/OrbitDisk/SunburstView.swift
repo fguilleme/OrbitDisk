@@ -15,6 +15,7 @@ struct SunburstView: View {
     let selection: DiskNode?
     let onSelect: (DiskNode) -> Void
     let onOpen: (DiskNode) -> Void
+    let onHover: (DiskNode?) -> Void
 
     @State private var hovered: DiskNode?
 
@@ -60,9 +61,14 @@ struct SunburstView: View {
                 .onContinuousHover { phase in
                     switch phase {
                     case .active(let location):
-                        hovered = hitTest(location, center: center, inner: innerRadius, ring: ringWidth)
+                        let next = hitTest(location, center: center, inner: innerRadius, ring: ringWidth)
+                        if next?.id != hovered?.id {
+                            hovered = next
+                            onHover(next)
+                        }
                     case .ended:
                         hovered = nil
+                        onHover(nil)
                     }
                 }
                 .gesture(SpatialTapGesture().onEnded { event in
@@ -120,6 +126,9 @@ struct SunburstView: View {
     }
 
     private func color(for segment: SunburstSegment) -> Color {
+        if segment.node.isSmallerObjects {
+            return Color(white: 0.42)
+        }
         let count = max(root.children.count, 1)
         let branchHue = (0.20 + Double(segment.branch) / Double(count) * 0.86).truncatingRemainder(dividingBy: 1)
 

@@ -16,6 +16,7 @@ struct DiskNode: Identifiable, Hashable, Sendable {
     let isUnreadable: Bool
 
     var isDirectory: Bool { kind == .folder }
+    var isSmallerObjects: Bool { id.hasSuffix("/.orbit-other") }
 
     func node(atPath path: String) -> DiskNode? {
         if id == path { return self }
@@ -23,6 +24,98 @@ struct DiskNode: Identifiable, Hashable, Sendable {
             if let match = child.node(atPath: path) { return match }
         }
         return nil
+    }
+
+    func path(to targetID: String) -> [DiskNode]? {
+        if id == targetID { return [self] }
+        for child in children {
+            if let suffix = child.path(to: targetID) {
+                return [self] + suffix
+            }
+        }
+        return nil
+    }
+
+    func removingNodes(atOrBelow removedPaths: Set<String>) -> DiskNode? {
+        let isRemoved = removedPaths.contains { removedPath in
+            id == removedPath || id.hasPrefix(removedPath + "/")
+        }
+        if isRemoved { return nil }
+
+        let updatedChildren = children.compactMap {
+            $0.removingNodes(atOrBelow: removedPaths)
+        }
+        guard updatedChildren.count != children.count
+                || zip(updatedChildren, children).contains(where: {
+                    $0.id != $1.id || $0.size != $1.size || $0.itemCount != $1.itemCount
+                }) else {
+            return self
+        }
+
+        let previousChildSize = children.reduce(Int64(0)) { $0 + $1.size }
+        let updatedChildSize = updatedChildren.reduce(Int64(0)) { $0 + $1.size }
+        let previousChildItems = children.reduce(0) { $0 + $1.itemCount }
+        let updatedChildItems = updatedChildren.reduce(0) { $0 + $1.itemCount }
+        return DiskNode(
+            id: id,
+            name: name,
+            url: url,
+            size: max(0, size - (previousChildSize - updatedChildSize)),
+            itemCount: max(1, itemCount - (previousChildItems - updatedChildItems)),
+            kind: kind,
+            children: updatedChildren,
+            isUnreadable: isUnreadable
+        )
+    }
+
+    /// Keeps meaningful branches visible and combines objects too small to
+    /// produce a useful chart segment. Existing scanner overflow is folded
+    /// into the same aggregate, so its size remains exactly conserved.
+    static func consolidatingSmallChildren(
+        _ children: [DiskNode],
+        parentID: String,
+        parentSize: Int64,
+        minimumVisible: Int = 3,
+        minimumFraction: Double = 0.0001
+    ) -> [DiskNode] {
+        let sorted = children
+            .filter { !$0.isSmallerObjects }
+            .sorted {
+                if $0.size != $1.size { return $0.size > $1.size }
+                return $0.name.localizedStandardCompare($1.name) == .orderedAscending
+            }
+        let threshold = max(1, Int64(Double(max(parentSize, 0)) * minimumFraction))
+        var visible: [DiskNode] = []
+        var smallerSize: Int64 = 0
+        var smallerItems = 0
+
+        for (index, child) in sorted.enumerated() {
+            if index < minimumVisible || child.size >= threshold {
+                visible.append(child)
+            } else {
+                smallerSize += child.size
+                smallerItems += child.itemCount
+            }
+        }
+
+        for aggregate in children where aggregate.isSmallerObjects {
+            smallerSize += aggregate.size
+            smallerItems += aggregate.itemCount
+        }
+
+        if smallerItems > 0 {
+            visible.append(DiskNode(
+                id: parentID + "/.orbit-other",
+                name: "smaller objects…",
+                url: nil,
+                size: smallerSize,
+                itemCount: smallerItems,
+                kind: .aggregate,
+                children: [],
+                isUnreadable: false
+            ))
+        }
+        return visible
     }
 
     /// Reconciles a scanned hierarchy with the physical usage reported by the
@@ -123,7 +216,22 @@ struct VolumeInfo: Identifiable, Sendable {
 
 enum ByteText {
     static func string(_ bytes: Int64) -> String {
-        bytes.formatted(.byteCount(style: .file))
+        let value = Double(max(0, bytes))
+        let units = ["bytes", "KB", "MB", "GB", "TB", "PB"]
+        var unitIndex = 0
+        var scaled = value
+        while scaled >= 1_000, unitIndex < units.count - 1 {
+            scaled /= 1_000
+            unitIndex += 1
+        }
+
+        if unitIndex == 0 { return "\(Int64(scaled)) bytes" }
+        let rounded = (scaled * 10).rounded() / 10
+        let fractionDigits = rounded == rounded.rounded() ? 0 : 1
+        let number = rounded.formatted(
+            .number.precision(.fractionLength(fractionDigits))
+        )
+        return "\(number) \(units[unitIndex])"
     }
 }
 

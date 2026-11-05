@@ -244,6 +244,7 @@ private struct FolderScanProgress: View {
 private struct AnalysisView: View {
     @EnvironmentObject private var model: ScanViewModel
     let focus: DiskNode
+    @State private var hoveredNode: DiskNode?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -253,13 +254,14 @@ private struct AnalysisView: View {
                     root: focus,
                     selection: model.selected,
                     onSelect: { model.selected = $0 },
-                    onOpen: model.navigate
+                    onOpen: model.navigate,
+                    onHover: { hoveredNode = $0 }
                 )
                 .padding(.leading, 18)
                 .padding(.vertical, 16)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
 
-                LegendView(focus: focus)
+                LegendView(focus: hoveredNode ?? focus)
                     .frame(width: 280)
                     .padding(.top, 38)
                     .padding(.trailing, 20)
@@ -271,6 +273,9 @@ private struct AnalysisView: View {
         .background(InterfaceColors.window)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 20, style: .continuous).stroke(.white.opacity(0.17), lineWidth: 1))
+        .onChange(of: focus.id) { _, _ in
+            hoveredNode = nil
+        }
     }
 }
 
@@ -290,8 +295,14 @@ private struct AnalysisToolbar: View {
             HStack(spacing: 0) {
                 Button("Disks and Folders", action: model.returnToVolumes)
                     .buttonStyle(BreadcrumbButtonStyle(accented: true))
-                Button(focus.name) { model.navigateHome() }
-                    .buttonStyle(BreadcrumbButtonStyle(accented: false))
+                if let root = model.root {
+                    Button(root.name) { model.navigateHome() }
+                        .buttonStyle(BreadcrumbButtonStyle(accented: false))
+                }
+                ForEach(model.navigation) { node in
+                    Button(node.name) { model.navigate(to: node) }
+                        .buttonStyle(BreadcrumbButtonStyle(accented: false))
+                }
             }
             Spacer()
         }
@@ -305,7 +316,20 @@ private struct LegendView: View {
     @EnvironmentObject private var model: ScanViewModel
     let focus: DiskNode
 
-    private var visibleChildren: [DiskNode] { Array(focus.children.prefix(7)) }
+    private var regularChildren: [DiskNode] {
+        focus.children.filter { !$0.isSmallerObjects }
+    }
+    private var visibleChildren: [DiskNode] { Array(regularChildren.prefix(7)) }
+    private var smallerSize: Int64 {
+        focus.children
+            .filter(\.isSmallerObjects)
+            .reduce(0) { $0 + $1.size }
+            + regularChildren.dropFirst(visibleChildren.count).reduce(0) { $0 + $1.size }
+    }
+    private var hasSmallerObjects: Bool {
+        focus.children.contains(where: \.isSmallerObjects)
+            || regularChildren.count > visibleChildren.count
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -340,12 +364,12 @@ private struct LegendView: View {
                 }
             }
 
-            if focus.children.count > visibleChildren.count {
+            if hasSmallerObjects {
                 HStack(spacing: 10) {
                     Circle().fill(.gray.opacity(0.4)).frame(width: 7, height: 7)
                     Text("smaller objects…")
                     Spacer()
-                    Text(ByteText.string(focus.children.dropFirst(visibleChildren.count).reduce(Int64(0)) { $0 + $1.size }))
+                    Text(ByteText.string(smallerSize))
                         .monospacedDigit()
                 }
                 .font(.system(size: 13, weight: .light))
@@ -394,12 +418,39 @@ private struct CollectorBar: View {
             .frame(width: 40, height: 40)
 
             if model.collected.isEmpty {
-                Text("Right-click items to collect them")
-                    .foregroundStyle(InterfaceColors.muted)
+                if let status = model.collectorStatus {
+                    Text(status)
+                        .foregroundStyle(model.collectorStatusIsError ? .red.opacity(0.82) : .green.opacity(0.78))
+                } else {
+                    Text("Right-click items to collect them")
+                        .foregroundStyle(InterfaceColors.muted)
+                }
             } else {
                 Text("\(model.collected.count) item\(model.collected.count == 1 ? "" : "s") collected • \(ByteText.string(model.collectedSize))")
-                Button("Clear", action: model.clearCollector)
-                    .buttonStyle(DarkButtonStyle())
+                if let status = model.collectorStatus {
+                    Text(status)
+                        .lineLimit(1)
+                        .foregroundStyle(model.collectorStatusIsError ? .red.opacity(0.82) : .green.opacity(0.78))
+                }
+                if model.isTrashingCollected {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text("Moving to Trash…")
+                        .foregroundStyle(.orange.opacity(0.86))
+                } else if let remaining = model.collectorTrashSecondsRemaining {
+                    ProgressView(value: Double(5 - remaining), total: 5)
+                        .progressViewStyle(.linear)
+                        .tint(.orange)
+                        .frame(width: 72)
+                    Text("Moving to Trash in \(remaining)s…")
+                        .foregroundStyle(.orange.opacity(0.86))
+                        .monospacedDigit()
+                    Button("Undo", action: model.cancelCollectorTrash)
+                        .buttonStyle(DarkButtonStyle())
+                } else {
+                    Button("Move to Trash", action: model.beginTrashCollector)
+                        .buttonStyle(DarkButtonStyle())
+                }
             }
             Spacer()
         }

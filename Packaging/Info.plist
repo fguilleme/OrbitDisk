@@ -12,6 +12,8 @@
 	<string>OrbitDisk</string>
 	<key>CFBundleIdentifier</key>
 	<string>app.orbitdisk.mac</string>
+	<key>CFBundleIconFile</key>
+	<string>OrbitDisk.icns</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

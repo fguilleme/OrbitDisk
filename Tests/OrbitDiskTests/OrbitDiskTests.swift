@@ -11,6 +11,46 @@ final class OrbitDiskTests: XCTestCase {
         let leaf = DiskNode(id: "/tmp/root/a.txt", name: "a.txt", url: nil, size: 42, itemCount: 1, kind: .file, children: [], isUnreadable: false)
         let root = DiskNode(id: "/tmp/root", name: "root", url: nil, size: 42, itemCount: 2, kind: .folder, children: [leaf], isUnreadable: false)
         XCTAssertEqual(root.node(atPath: leaf.id)?.size, 42)
+        XCTAssertEqual(root.path(to: leaf.id)?.map(\.name), ["root", "a.txt"])
+    }
+
+    func testRemovingNodeUpdatesAncestorsWithoutRescan() {
+        let removed = DiskNode(id: "/root/removed", name: "removed", url: nil, size: 40, itemCount: 2, kind: .folder, children: [], isUnreadable: false)
+        let kept = DiskNode(id: "/root/kept", name: "kept", url: nil, size: 60, itemCount: 3, kind: .folder, children: [], isUnreadable: false)
+        let root = DiskNode(id: "/root", name: "root", url: nil, size: 100, itemCount: 6, kind: .folder, children: [removed, kept], isUnreadable: false)
+
+        let updated = root.removingNodes(atOrBelow: [removed.id])
+
+        XCTAssertEqual(updated?.size, 60)
+        XCTAssertEqual(updated?.itemCount, 4)
+        XCTAssertEqual(updated?.children.map(\.id), [kept.id])
+    }
+
+    func testSmallChildrenAreConsolidatedWithoutChangingSize() {
+        let children = [
+            DiskNode(id: "/Developer/Xcode", name: "Xcode", url: nil, size: 18_600_000_000, itemCount: 1, kind: .folder, children: [], isUnreadable: false),
+            DiskNode(id: "/Developer/CoreSimulator", name: "CoreSimulator", url: nil, size: 11_500_000_000, itemCount: 1, kind: .folder, children: [], isUnreadable: false),
+            DiskNode(id: "/Developer/XcodeBuildMCP", name: "XcodeBuildMCP", url: nil, size: 3_300_000_000, itemCount: 1, kind: .folder, children: [], isUnreadable: false),
+            DiskNode(id: "/Developer/DVTDownloads", name: "DVTDownloads", url: nil, size: 12_288, itemCount: 2, kind: .folder, children: [], isUnreadable: false),
+            DiskNode(id: "/Developer/Packages", name: "Packages", url: nil, size: 0, itemCount: 1, kind: .folder, children: [], isUnreadable: false),
+            DiskNode(id: "/Developer/.orbit-other", name: "smaller objects…", url: nil, size: 12_288, itemCount: 3, kind: .aggregate, children: [], isUnreadable: false)
+        ]
+
+        let grouped = DiskNode.consolidatingSmallChildren(
+            children,
+            parentID: "/Developer",
+            parentSize: 33_400_024_576
+        )
+
+        XCTAssertEqual(grouped.count, 4)
+        XCTAssertEqual(grouped.last?.name, "smaller objects…")
+        XCTAssertEqual(grouped.last?.size, 24_576)
+        XCTAssertEqual(grouped.reduce(Int64(0)) { $0 + $1.size }, children.reduce(Int64(0)) { $0 + $1.size })
+    }
+
+    func testByteTextUsesDaisyStyleDecimalPrecision() {
+        XCTAssertTrue(["33.4 GB", "33,4 GB"].contains(ByteText.string(33_421_729_792)))
+        XCTAssertTrue(["24.6 KB", "24,6 KB"].contains(ByteText.string(24_576)))
     }
 
     func testReconciliationAddsHiddenPhysicalSpace() {

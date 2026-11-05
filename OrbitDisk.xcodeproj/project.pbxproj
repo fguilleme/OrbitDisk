@@ -13,6 +13,7 @@
 		B005 /* ScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F014 /* ScanViewModel.swift */; };
 		B006 /* SunburstView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F015 /* SunburstView.swift */; };
 		B007 /* OrbitDiskTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F016 /* OrbitDiskTests.swift */; };
+		B008 /* OrbitDisk.icns in Resources */ = {isa = PBXBuildFile; fileRef = F020 /* OrbitDisk.icns */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -36,6 +37,8 @@
 		F017 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F018 /* OrbitDisk.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OrbitDisk.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F019 /* OrbitDiskTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OrbitDiskTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F020 /* OrbitDisk.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = OrbitDisk.icns; sourceTree = "<group>"; };
+		F021 /* AppIcon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = AppIcon.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,7 +67,7 @@
 			path = Tests/OrbitDiskTests;
 			sourceTree = "<group>";
 		};
-		F006 /* Packaging */ = {isa = PBXGroup; children = (F017 /* Info.plist */); path = Packaging; sourceTree = "<group>"; };
+		F006 /* Packaging */ = {isa = PBXGroup; children = (F017 /* Info.plist */, F020 /* OrbitDisk.icns */, F021 /* AppIcon.png */); path = Packaging; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -115,7 +118,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		P003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		P003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (B008 /* OrbitDisk.icns in Resources */); runOnlyForDeploymentPostprocessing = 0; };
 		P006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
